@@ -26,7 +26,7 @@ public interface MatchRepository extends JpaRepository<Match, Integer> {
 
 
  @Query("SELECT d.match.matchNumber, SUM(d.runsTotal) FROM Delivery d WHERE d.match.dates = :matchDate GROUP BY d.match.matchNumber")
- List<Object[]> getMatchScoresByDate(@Param("matchDate") LocalDateTime dates);
+ List<Object[]> getMatchScoresByDate(@Param("matchDate") LocalDate dates);
  // Custom query methods (if any) can be added here
 
  @Query("SELECT d.batter, SUM(d.runsBatter) as totalRuns FROM Delivery d GROUP BY d.batter ORDER BY totalRuns ASC")

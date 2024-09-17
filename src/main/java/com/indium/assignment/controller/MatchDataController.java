@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class MatchDataController {
 
     @Autowired
     private MatchDataService matchDataService;
+
     @PostMapping("/upload")
     public ResponseEntity<String> uploadMatchData(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -44,42 +46,42 @@ public class MatchDataController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error processing file: " + e.getMessage());
 
-    }
+        }
 
     }
-//    @GetMapping("/matches/player/{playerName}")
-//    public Integer getMatchesByPlayer(@PathVariable String playerName) {
-//        return matchDataService.getMatchesByPlayerName(playerName);
-//    }
-//
-//    @GetMapping("/player/{playerName}/cumulativeScore")
-//    public Integer getCumulativeScore(@PathVariable String playerName) {
-//        return matchDataService.getCumulativeScore(playerName);
-//    }
-//    /*
-//    @GetMapping("/matches/scores/dates") //?dates=2008-04-24T00:00:00
-//    public List<Object[]> getMatchScores(@PathVariable("dates") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dates) {
-//        return matchDataService.getMatchScores(dates);
-//    }
-//    */
-//
-//    @GetMapping("/matches/scores/{dates}")
-//    public ResponseEntity<String> getMatchScores(@PathVariable("dates") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dates) {
-//        List<Object[]> scores = matchDataService.getMatchScores(dates);
-//
-//        // Convert scores to a String format
-//        String response = scores.stream()
-//                .map(score -> "Match ID: " + score[0] + ", Score: " + score[1])
-//                .collect(Collectors.joining(", ", "Scores for matches on " + dates.toLocalDate() + ": ", ""));
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//
-//    @GetMapping("/topbatsmen")
-//    public List<Map<String, Object>> getTopBatsmen(Pageable pageable) {
-//        return matchDataService.getTopBatsmen(pageable);
-//    }
+
+    @GetMapping("/matches/player/{playerName}")
+    public Integer getMatchesByPlayer(@PathVariable String playerName) {
+        return matchDataService.getMatchesByPlayerName(playerName);
+    }
+
+    @GetMapping("/player/{playerName}/cumulativeScore")
+    public Integer getCumulativeScore(@PathVariable String playerName) {
+        return matchDataService.getCumulativeScore(playerName);
+    }
+    /*
+    @GetMapping("/matches/scores/dates") //?dates=2008-04-24T00:00:00
+    public List<Object[]> getMatchScores(@PathVariable("dates") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dates) {
+        return matchDataService.getMatchScores(dates);
+    }
+    */
+
+    @GetMapping("/matches/scores/{dates}")
+    public ResponseEntity<String> getMatchScores(@PathVariable LocalDate dates) {
+        List<Object[]> scores = matchDataService.getMatchScores(dates);
+
+        // Convert scores to a String format
+        String response = scores.stream()
+                .map(score -> "Match ID: " + score[0] + ", Score: " + score[1])
+                .collect(Collectors.joining(", ", "Scores for matches on " + dates + ": ", ""));
+
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/topbatsmen")
+    public List<Map<String, Object>> getTopBatsmen(Pageable pageable) {
+        return matchDataService.getTopBatsmen(pageable);
+    }
 }
-
 

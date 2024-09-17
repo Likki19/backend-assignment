@@ -248,5 +248,54 @@ public class MatchDataService {
         }
     }
 
+    public Integer getMatchesByPlayerName(String playerName) {
+        logger.info("Fetching matches for player: {}", playerName);
+        sendLogToKafka("getMatchesByPlayerName", "playerName", playerName);
+        //return matchRepository.findMatchesByPlayerName(playerName);
+        Integer matches = matchRepository.countMatchesByPlayerName(playerName);
+        return matches;
+    }
+
+    // @Transactional
+    public int getCumulativeScore(String playerName) {
+        logger.info("Calculating cumulative score for player: {}", playerName);
+        sendLogToKafka("getCumulativeScore", "playerName", playerName);
+        return matchRepository.getCumulativeScoreByPlayer(playerName);
+    }
+
+    //@Transactional
+
+    public List<Object[]> getMatchScores(LocalDate dates) {
+        sendLogToKafka("getMatchScores", "dates", dates.toString());
+        return matchRepository.getMatchScoresByDate(dates);
+    }
+
+    public List<Map<String, Object>> getTopBatsmen(Pageable pageable) {
+        sendLogToKafka("getTopBatsmen", "pageable", pageable.toString());
+        Page<Object[]> topBatsmenPage = matchRepository.findTopBatsmen(pageable);
+
+        // Process the result to return only the player name and scores
+        return topBatsmenPage.getContent().stream()
+                .map(row -> Map.of("playerName", row[0], "totalRuns", row[1])) // row[0] is player name, row[1] is total runs
+                .collect(Collectors.toList());
+    }
+    private void sendLogToKafka(String methodName, String paramKey, String paramValue) {
+        try {
+            Map<String, Object> logMessage = new HashMap<>();
+            logMessage.put("method", methodName);
+            logMessage.put("timestamp", LocalDateTime.now().toString());
+            logMessage.put("params", Map.of(paramKey, paramValue));
+
+            String jsonLog = objectMapper.writeValueAsString(logMessage);
+
+            // Send log to Kafka
+            kafkaTemplate.send(new ProducerRecord<>(TOPIC, jsonLog));
+            logger.info("Log sent to Kafka: {}", jsonLog);
+
+        } catch (Exception e) {
+            logger.error("Failed to send log to Kafka", e);
+        }
+    }
+
 
 }
