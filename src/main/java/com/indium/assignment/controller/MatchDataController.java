@@ -2,14 +2,8 @@
 package com.indium.assignment.controller;
 
 import com.indium.assignment.service.MatchDataService;
-import com.indium.assignment.entity.Match;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +23,7 @@ public class MatchDataController {
     @Autowired
     private MatchDataService matchDataService;
 
+
     @PostMapping("/upload")
     public ResponseEntity<String> uploadMatchData(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -37,6 +32,10 @@ public class MatchDataController {
 
         try {
             String result = matchDataService.uploadAndParse(file);
+            if (result == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error processing file: result is null");
+            }
             if (result.equals("Match already exists")) {
                 return ResponseEntity.status(HttpStatus.OK).body("Match already exists in the database");
             } else {
@@ -45,10 +44,9 @@ public class MatchDataController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error processing file: " + e.getMessage());
-
         }
-
     }
+
 
     @GetMapping("/matches/player/{playerName}")
     public Integer getMatchesByPlayer(@PathVariable String playerName) {

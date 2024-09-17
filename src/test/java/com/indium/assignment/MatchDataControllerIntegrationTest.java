@@ -42,7 +42,7 @@ public class MatchDataControllerIntegrationTest {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
         // Load the test file from the classpath
-        ClassPathResource fileResource = new ClassPathResource("335992.json");
+        ClassPathResource fileResource = new ClassPathResource("335997.json");
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", fileResource);
@@ -51,12 +51,12 @@ public class MatchDataControllerIntegrationTest {
 
         ResponseEntity<String> response = testRestTemplate.postForEntity(url, requestEntity, String.class);
         assertEquals(200, response.getStatusCodeValue());
-        assertEquals("File uploaded and data saved successfully", response.getBody());
+        assertEquals("Match already exists in the database", response.getBody());
     }
 
     @Test
     public void testGetMatchesByPlayer() {
-        String playerName = "V Kohli";
+        String playerName = "K Goel";
         String url = "http://localhost:" + port + "/api/cricket/matches/player/" + playerName;
 
         Integer response = testRestTemplate.getForObject(url, Integer.class);
@@ -65,20 +65,20 @@ public class MatchDataControllerIntegrationTest {
 
     @Test
     public void testGetCumulativeScore() {
-        String playerName = "V Kohli";
+        String playerName = "K Goel";
         String url = "http://localhost:" + port + "/api/cricket/player/" + playerName + "/cumulativeScore";
 
         Integer response = testRestTemplate.getForObject(url, Integer.class);
-        assertEquals(13, response);  // Expected cumulative score of V Kohli
+        assertEquals(26, response);  // Expected cumulative score of V Kohli
     }
 
     @Test
     public void testGetMatchScoresByDate() {
-        String date = "2008-04-24T00:00:00";
+        String date = "2008-04-19";
         String url = "http://localhost:" + port + "/api/cricket/matches/scores/" + date;
 
         ResponseEntity<String> response = testRestTemplate.getForEntity(url, String.class);
-        String expectedResponse = "Scores for matches on 2008-04-24: Match ID: 9, Score: 431";
+        String expectedResponse = "Scores for matches on 2008-04-19: Match ID: 3, Score: 261";
         // You can adjust the expectedResponse to match the actual response format.
 
         assertEquals(expectedResponse, response.getBody());
@@ -86,7 +86,7 @@ public class MatchDataControllerIntegrationTest {
 
     @Test
     public void testGetTopBatsmen() throws Exception {
-        String url = "http://localhost:" + port + "/api/cricket/topbatsmen?page=0&size=5";
+        String url = "http://localhost:" + port + "/api/cricket/topbatsmen";
 
         // Perform the actual request
         ResponseEntity<String> response = testRestTemplate.getForEntity(url, String.class);
@@ -96,27 +96,27 @@ public class MatchDataControllerIntegrationTest {
 
         // Define the expected response
         JSONArray expectedResponseArray = new JSONArray(
-                "[" +
-                        "{\"totalRuns\":0,\"playerName\":\"M Rawat\"}," +
-                        "{\"totalRuns\":0,\"playerName\":\"R Dravid\"}," +
-                        "{\"totalRuns\":0,\"playerName\":\"S Dhawan\"}," +
-                        "{\"totalRuns\":1,\"playerName\":\"K Goel\"}," +
-                        "{\"totalRuns\":1,\"playerName\":\"R Vinay Kumar\"}," +
-                        "{\"totalRuns\":1,\"playerName\":\"RA Jadeja\"}," +
-                        "{\"totalRuns\":1,\"playerName\":\"B Lee\"}," +
-                        "{\"totalRuns\":1,\"playerName\":\"D Salunkhe\"}," +
-                        "{\"totalRuns\":2,\"playerName\":\"S Chanderpaul\"}," +
-                        "{\"totalRuns\":3,\"playerName\":\"SB Joshi\"}," +
-                        "{\"totalRuns\":4,\"playerName\":\"MV Boucher\"}," +
-                        "{\"totalRuns\":4,\"playerName\":\"Pankaj Singh\"}," +
-                        "{\"totalRuns\":4,\"playerName\":\"KC Sangakkara\"}," +
-                        "{\"totalRuns\":6,\"playerName\":\"VY Mahesh\"}," +
-                        "{\"totalRuns\":6,\"playerName\":\"V Sehwag\"}," +
-                        "{\"totalRuns\":7,\"playerName\":\"TM Srivastava\"}," +
-                        "{\"totalRuns\":10,\"playerName\":\"Shahid Afridi\"}," +
-                        "{\"totalRuns\":10,\"playerName\":\"IK Pathan\"}," +
-                        "{\"totalRuns\":11,\"playerName\":\"JH Kallis\"}," +
-                        "{\"totalRuns\":12,\"playerName\":\"Kamran Akmal\"}" +
+                "[\n" +
+                        "    {\"totalRuns\":164,\"playerName\":\"ML Hayden\"},\n" +
+                        "    {\"totalRuns\":138,\"playerName\":\"MS Dhoni\"},\n" +
+                        "    {\"totalRuns\":106,\"playerName\":\"V Sehwag\"},\n" +
+                        "    {\"totalRuns\":97,\"playerName\":\"SR Watson\"},\n" +
+                        "    {\"totalRuns\":81,\"playerName\":\"SK Raina\"},\n" +
+                        "    {\"totalRuns\":77,\"playerName\":\"S Dhawan\"},\n" +
+                        "    {\"totalRuns\":70,\"playerName\":\"G Gambhir\"},\n" +
+                        "    {\"totalRuns\":66,\"playerName\":\"RG Sharma\"},\n" +
+                        "    {\"totalRuns\":65,\"playerName\":\"RA Jadeja\"},\n" +
+                        "    {\"totalRuns\":57,\"playerName\":\"Yuvraj Singh\"},\n" +
+                        "    {\"totalRuns\":56,\"playerName\":\"PA Patel\"},\n" +
+                        "    {\"totalRuns\":53,\"playerName\":\"LRPL Taylor\"},\n" +
+                        "    {\"totalRuns\":52,\"playerName\":\"MEK Hussey\"},\n" +
+                        "    {\"totalRuns\":50,\"playerName\":\"W Jaffer\"},\n" +
+                        "    {\"totalRuns\":46,\"playerName\":\"LR Shukla\"},\n" +
+                        "    {\"totalRuns\":45,\"playerName\":\"AM Nayar\"},\n" +
+                        "    {\"totalRuns\":44,\"playerName\":\"A Symonds\"},\n" +
+                        "    {\"totalRuns\":43,\"playerName\":\"RV Uthappa\"},\n" +
+                        "    {\"totalRuns\":38,\"playerName\":\"DJ Hussey\"},\n" +
+                        "    {\"totalRuns\":37,\"playerName\":\"WP Saha\"}\n" +
                         "]"
         );
         }

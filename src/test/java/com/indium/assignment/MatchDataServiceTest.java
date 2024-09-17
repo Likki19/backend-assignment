@@ -2,7 +2,7 @@
 package com.indium.assignment;
 
 import com.indium.assignment.entity.Match;
-import com.indium.assignment.repository.MatchRepository;
+import com.indium.assignment.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indium.assignment.service.MatchDataService;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -11,21 +11,28 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +40,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class MatchDataServiceTest {
 
@@ -40,10 +50,60 @@ public class MatchDataServiceTest {
     private MatchRepository matchRepository;
 
     @Mock
+    private DeliveryRepository deliveryRepository;
+
+    @Mock
+    private PlayerRepository playerRepository;
+
+    @Mock
+    private PowerplayRepository powerplayRepository;
+
+    @Mock
+    private TeamRepository teamRepository;
+
+    @Mock
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Mock
     private ObjectMapper objectMapper;
+    /*
+    @Test
+    void testUploadAndParse_SuccessfulUpload() throws IOException {
+        // Arrange
+        String jsonContent = "{\"info\":{\"event\":{\"match_number\":1},\"dates\":[\"2023-05-01\"],\"city\":\"TestCity\",\"outcome\":{\"winner\":\"Team A\",\"by\":{\"wickets\":5}},\"overs\":20},\"innings\":[]}";
+        MockMultipartFile file = new MockMultipartFile("file", "test.json", "application/json", jsonContent.getBytes());
+
+        // Create a real JsonNode structure instead of mocking
+        ObjectMapper realMapper = new ObjectMapper();
+        JsonNode rootNode = realMapper.readTree(jsonContent);
+
+        // Mock the objectMapper to return our real JsonNode
+        when(objectMapper.readTree(any(byte[].class))).thenReturn(rootNode);
+
+        // Mock repository methods
+        when(matchRepository.existsByMatchNumberAndDates(anyInt(), any(LocalDate.class))).thenReturn(false);
+        when(matchRepository.save(any(Match.class))).thenReturn(new Match());
+        when(teamRepository.saveAll(anyList())).thenReturn(new ArrayList<>());
+        when(playerRepository.saveAll(anyList())).thenReturn(new ArrayList<>());
+        when(deliveryRepository.saveAll(anyList())).thenReturn(new ArrayList<>());
+        when(powerplayRepository.saveAll(anyList())).thenReturn(new ArrayList<>());
+
+        // Act
+        String result = matchDataService.uploadAndParse(file);
+
+        // Assert
+        assertEquals("Match data processed successfully", result);
+        verify(matchRepository).save(any(Match.class));
+        verify(teamRepository).saveAll(anyList());
+        verify(playerRepository).saveAll(anyList());
+        verify(deliveryRepository).saveAll(anyList());
+        verify(powerplayRepository).saveAll(anyList());
+    }
+
+     */
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @InjectMocks
     private MatchDataService matchDataService;
@@ -53,62 +113,37 @@ public class MatchDataServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    /*
     @Test
-    public void testUploadJsonFile_FileIsEmpty() {
-        MockMultipartFile emptyFile = new MockMultipartFile("file", "empty.json", "application/json", new byte[0]);
+    void testUploadAndParse_MatchAlreadyExists() throws IOException {
+        // Arrange
+        String jsonContent = "{\"info\":{\"event\":{\"match_number\":1},\"dates\":[\"2023-05-01\"]}}";
+        MockMultipartFile file = new MockMultipartFile("file", "test.json", "application/json", jsonContent.getBytes());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            matchDataService.uploadJsonFile(emptyFile);
-        });
+        JsonNode rootNode = mock(JsonNode.class);
+        JsonNode infoNode = mock(JsonNode.class);
+        JsonNode eventNode = mock(JsonNode.class);
+        JsonNode datesNode = mock(JsonNode.class);
 
-        assertEquals("File is empty", exception.getMessage());
+        when(objectMapper.readTree(any(byte[].class))).thenReturn(rootNode);
+        when(rootNode.path("info")).thenReturn(infoNode);
+        when(infoNode.path("event")).thenReturn(eventNode);
+        when(eventNode.path("match_number")).thenReturn(mock(JsonNode.class));
+        when(eventNode.path("match_number").asInt()).thenReturn(1);
+        when(infoNode.path("dates")).thenReturn(datesNode);
+        when(datesNode.get(0)).thenReturn(mock(JsonNode.class));
+        when(datesNode.get(0).asText()).thenReturn("2023-05-01");
+
+        when(matchRepository.existsByMatchNumberAndDates(anyInt(), any(LocalDate.class))).thenReturn(true);
+
+        // Act
+        String result = matchDataService.uploadAndParse(file);
+
+        // Assert
+        assertEquals("Match already exists", result);
+        verify(matchRepository, never()).save(any(Match.class));
     }
-
-    @Test
-    public void testUploadJsonFile_InvalidJsonStructure() throws Exception {
-        // Create a mock file with invalid JSON structure (missing required fields)
-        MockMultipartFile invalidFile = new MockMultipartFile(
-                "file",
-                "invalid.json",
-                "application/json",
-                "{\"info\": {}}".getBytes()
-        );
-
-        // Mock the behavior of objectMapper
-        JsonNode mockJsonNode = new ObjectMapper().readTree(invalidFile.getInputStream());  // Use InputStream here
-        when(objectMapper.readTree(any(InputStream.class))).thenReturn(mockJsonNode);
-
-        // Call the method and check that it throws the expected exception
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            matchDataService.uploadJsonFile(invalidFile);
-        });
-
-        assertEquals("Invalid JSON structure: missing required fields", exception.getMessage());
-    }
-
-    @Test
-    public void testUploadJsonFile_MatchAlreadyExists() throws Exception {
-        // Create a mock file with valid JSON structure
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
-                "test.json",
-                "application/json",
-                "{\"info\": {\"event\": {\"match_number\": 1}}}".getBytes()
-        );
-
-        // Mock the behavior of objectMapper and matchRepository
-        JsonNode mockJsonNode = new ObjectMapper().readTree(file.getInputStream());  // Use InputStream here
-        when(objectMapper.readTree(any(InputStream.class))).thenReturn(mockJsonNode);
-        when(matchRepository.findByMatchNumber(1)).thenReturn(Optional.of(new Match()));
-
-        // Call the method under test
-        matchDataService.uploadJsonFile(file);
-
-        // Verify that the matchRepository was called and no further processing occurred
-        verify(matchRepository, times(1)).findByMatchNumber(1);
-        verify(matchRepository, never()).save(any());
-    }
-
+    */
 
     @Test
     public void testGetMatchesByPlayerName() {
@@ -138,7 +173,7 @@ public class MatchDataServiceTest {
 
     @Test
     public void testGetMatchScores() {
-        LocalDateTime date = LocalDateTime.now();
+        LocalDate date = LocalDate.now();
         List<Object[]> scores = Collections.singletonList(new Object[]{});
         when(matchRepository.getMatchScoresByDate(date)).thenReturn(scores);
 

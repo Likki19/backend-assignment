@@ -62,6 +62,7 @@ public class MatchDataService {
     private boolean matchExists(int matchNumber, LocalDate date) {
         return matchRepository.existsByMatchNumberAndDates(matchNumber, date);
     }
+    @CacheEvict(value = {"matchesByPlayer", "cumulativeScoreByPlayer", "matchScoresByDate", "topBatsmen"}, allEntries = true)
     @Transactional
     public String uploadAndParse(MultipartFile file) throws IOException {
         JsonNode rootNode = objectMapper.readTree(file.getInputStream());
@@ -247,7 +248,7 @@ public class MatchDataService {
             return playerRepository.save(player);
         }
     }
-
+    @Cacheable(value = "matchesByPlayer", key = "#playerName")
     public Integer getMatchesByPlayerName(String playerName) {
         logger.info("Fetching matches for player: {}", playerName);
         sendLogToKafka("getMatchesByPlayerName", "playerName", playerName);
@@ -257,6 +258,7 @@ public class MatchDataService {
     }
 
     // @Transactional
+    @Cacheable(value = "cumulativeScoreByPlayer", key = "#playerName", unless = "#result == null")
     public int getCumulativeScore(String playerName) {
         logger.info("Calculating cumulative score for player: {}", playerName);
         sendLogToKafka("getCumulativeScore", "playerName", playerName);
@@ -264,12 +266,12 @@ public class MatchDataService {
     }
 
     //@Transactional
-
+    @Cacheable(value = "matchScoresByDate", key = "#dates" ,unless="#result == null")
     public List<Object[]> getMatchScores(LocalDate dates) {
         sendLogToKafka("getMatchScores", "dates", dates.toString());
         return matchRepository.getMatchScoresByDate(dates);
     }
-
+    @Cacheable(value = "topBatsmen")
     public List<Map<String, Object>> getTopBatsmen(Pageable pageable) {
         sendLogToKafka("getTopBatsmen", "pageable", pageable.toString());
         Page<Object[]> topBatsmenPage = matchRepository.findTopBatsmen(pageable);
@@ -296,6 +298,6 @@ public class MatchDataService {
             logger.error("Failed to send log to Kafka", e);
         }
     }
+    }
 
 
-}

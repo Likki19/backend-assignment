@@ -1,29 +1,29 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: assignment-deployment
+  name: spring-boot-assignment-deployment
   labels:
-    app: assignment
+    app: spring-boot-assignment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: assignment
+      app: spring-boot-assignment
   template:
     metadata:
       labels:
-        app: assignment
+        app: spring-boot-assignment
     spec:
       containers:
-        - name: assignment
-          image: assignment:0.0.1
+        - name: spring-boot-assignment
+          image: assignment:0.1
           env:
             - name: KAFKA_HOST
               value: "host.docker.internal:9094"
             - name: REDIS_HOST
               value: "host.docker.internal"
             - name: MYSQL_URL
-              value: "jdbc:mysql://host.docker.internal:1000/ipl"
+              value: "jdbc:mysql://host.docker.internal:2000/ipl"
           ports:
             - containerPort: 5050
           resources:
@@ -38,12 +38,12 @@ spec:
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: assignment-hpa
+  name: spring-boot-assignment-hpa
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: assignment-deployment
+    name: spring-boot-assignment-deployment
   minReplicas: 1
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
@@ -52,12 +52,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: assignment-service
+  name: spring-boot-assignment-service
 spec:
   selector:
-    app: assignment
+    app: spring-boot-assignment
   type: NodePort
   ports:
     - port: 80
       targetPort: 5050
-      nodePort: 30005
+      nodePort: 30006

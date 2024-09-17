@@ -29,7 +29,7 @@ public interface MatchRepository extends JpaRepository<Match, Integer> {
  List<Object[]> getMatchScoresByDate(@Param("matchDate") LocalDate dates);
  // Custom query methods (if any) can be added here
 
- @Query("SELECT d.batter, SUM(d.runsBatter) as totalRuns FROM Delivery d GROUP BY d.batter ORDER BY totalRuns ASC")
+ @Query("SELECT d.batter, SUM(d.runsBatter) as totalRuns FROM Delivery d GROUP BY d.batter ORDER BY totalRuns DESC")
  Page<Object[]> findTopBatsmen(Pageable pageable);
 
  boolean existsByMatchNumberAndDates(int matchNumber, LocalDate date);
