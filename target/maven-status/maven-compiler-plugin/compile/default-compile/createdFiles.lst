@@ -1,0 +1,16 @@
+com\indium\assignment\AssignmentApplication.class
+com\indium\assignment\repository\PlayerRepository.class
+com\indium\assignment\repository\TeamRepository.class
+com\indium\assignment\service\MatchDataService.class
+com\indium\assignment\entity\Team.class
+com\indium\assignment\repository\DeliveryRepository.class
+com\indium\assignment\repository\OfficialRepository.class
+com\indium\assignment\config\SwaggerConfiguration.class
+com\indium\assignment\entity\Official.class
+com\indium\assignment\entity\Match.class
+com\indium\assignment\entity\Delivery.class
+com\indium\assignment\controller\MatchDataController.class
+com\indium\assignment\entity\Player.class
+com\indium\assignment\repository\MatchRepository.class
+com\indium\assignment\entity\Powerplay.class
+com\indium\assignment\repository\PowerplayRepository.class
