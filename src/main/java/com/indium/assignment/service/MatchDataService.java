@@ -52,7 +52,6 @@ public class MatchDataService {
     @Autowired
     private PowerplayRepository powerplayRepository;
 
-    //private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -160,8 +159,6 @@ public class MatchDataService {
                         delivery.setOverNumber(overNumber);
                         delivery.setBowler(deliveryNode.path("bowler").asText());
 
-                        // Extract and set batter's name
-                        // Extract and set batter's name
                         String batterName = deliveryNode.path("batter").asText();
                         if (batterName == null || batterName.isEmpty()) {
                             logger.warn("Batter name is null or empty, skipping delivery.");

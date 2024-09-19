@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,7 +25,7 @@ public class MatchDataController {
 
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadMatchData(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadMatchData(@RequestParam("file") MultipartFile file ,Authentication authentication) {
         if (file.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
         }
@@ -67,7 +67,7 @@ public class MatchDataController {
     @GetMapping("/matches/scores/{dates}")
     public ResponseEntity<String> getMatchScores(@PathVariable LocalDate dates) {
         List<Object[]> scores = matchDataService.getMatchScores(dates);
-
+//return data not information
         // Convert scores to a String format
         String response = scores.stream()
                 .map(score -> "Match ID: " + score[0] + ", Score: " + score[1])

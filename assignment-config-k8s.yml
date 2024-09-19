@@ -24,6 +24,14 @@ spec:
               value: "host.docker.internal"
             - name: MYSQL_URL
               value: "jdbc:mysql://host.docker.internal:2000/ipl"
+            - name: MYSQL_USER
+              value: "root"  # Add MySQL username
+            - name: MYSQL_PASSWORD
+              value: "root"  # Add MySQL password
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"  # Adjust Hibernate's ddl-auto behavior
+            - name: HIBERNATE_DIALECT
+              value: "org.hibernate.dialect.MySQL8Dialect"  # Specify Hibernate dialect
           ports:
             - containerPort: 5050
           resources:
